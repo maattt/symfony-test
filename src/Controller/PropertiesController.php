@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Property;
 use App\Repository\PropertyRepository;
+use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,8 +14,14 @@ class PropertiesController extends AbstractController {
    */
   private $repository;
 
-  public function __construct(PropertyRepository $repository) {
+  /**
+   * @var ObjectManager
+   */
+  private $em;
+
+  public function __construct(PropertyRepository $repository, ObjectManager $em) {
     $this->repository = $repository;
+    $this->em = $em;
   }
 
   /**
@@ -22,26 +29,26 @@ class PropertiesController extends AbstractController {
    * @return Response
    **/
   public function index(): Response {
-    // $property = new Property();
-    // $property->setTitle('Premier bien')
-    //          ->setPrice(200000)
-    //          ->setRooms(4)
-    //          ->setBedrooms(3)
-    //          ->setDescription('Description')
-    //          ->setSurface(60)
-    //          ->setFloor(4)
-    //          ->setHeat(1)
-    //          ->setCity('Caen')
-    //          ->setAddress('Boulevard xxx')
-    //          ->setPostalCode(14000);
-
-    // $em = $this->getDoctrine()->getManager();
-    // $em->persist($property);
-    // $em->flush();
-
     $property = $this->repository->findAllVisible();
-    dump($property);
     return $this->render('properties/index.html.twig', [
+      'current_menu' => 'properties'
+    ]);
+  }
+
+  /**
+   * @Route("/biens/{slug}-{id}", name="properties.show", requirements={"slug": "[a-z0-9\-]*"})
+   * @return Response
+   **/
+  public function show(Property $property, string $slug): Response {
+    if ($property->getSlug() !== $slug) {
+      return $this->redirectToRoute('properties.show', [
+        'id' => $property->getId(),
+        'slug' => $property->getSlug()
+      ], 301);
+    }
+    
+    return $this->render('properties/show.html.twig', [
+      'property' => $property,
       'current_menu' => 'properties'
     ]);
   }
