@@ -46,7 +46,7 @@ class PropertiesController extends AbstractController {
         'slug' => $property->getSlug()
       ], 301);
     }
-    
+
     return $this->render('properties/show.html.twig', [
       'property' => $property,
       'current_menu' => 'properties'
